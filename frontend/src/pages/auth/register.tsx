@@ -5,10 +5,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 const RegisterPage: React.FC = () => {
+  const [serverError, setServerError] = useState<string>("");
+
   const {
     register,
     handleSubmit,
@@ -20,6 +23,8 @@ const RegisterPage: React.FC = () => {
       password: "",
     },
   });
+
+  const navigate = useNavigate();
 
   const onSubmit = async ({
     name,
@@ -40,11 +45,10 @@ const RegisterPage: React.FC = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        console.log("Usuário cadastrado com sucesso!", data);
+        navigate("/");
       } else {
         const errorData = await response.json();
-        console.error("Erro ao cadastrar usuário:", errorData);
+        setServerError(errorData.error);
       }
     } catch (error) {
       console.error("erro na requisição:", error);
@@ -126,6 +130,9 @@ const RegisterPage: React.FC = () => {
         <Button type="submit" variant="contained" color="primary">
           Cadastrar
         </Button>
+        {serverError.length > 0 && (
+          <FormHelperText error>{serverError}</FormHelperText>
+        )}
       </form>
     </Box>
   );

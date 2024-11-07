@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../models/prismaClient";
 import bcrypt from "bcrypt";
+import { IEmailError } from "../types/emailError";
 
 export const createUser = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -8,7 +9,7 @@ export const createUser = async (req: Request, res: Response) => {
   if (!name || !email || !password) {
     return res
       .status(400)
-      .json({ error: "Name, email and password are required!" });
+      .json({ error: "Nome, email e senha são obrigatórios!" });
   }
 
   try {
@@ -27,7 +28,16 @@ export const createUser = async (req: Request, res: Response) => {
 
     res.status(201).json(newUser);
   } catch (error) {
-    res.status(500).json({ error: "Failed to create user!" });
+    if (error && (error as IEmailError).code) {
+      const emailError = error as IEmailError;
+      if (
+        emailError.code === "P2002" &&
+        emailError.meta.target[0] === "email"
+      ) {
+        return res.status(409).json({ error: "Email já cadastrado" });
+      }
+    }
+    res.status(500).json({ error: "Falha ao criar um usuário!" });
   }
 };
 
@@ -41,7 +51,7 @@ export const listUsers = async (req: Request, res: Response) => {
       });
 
       if (!user) {
-        return res.status(404).json({ error: "User not found!" });
+        return res.status(404).json({ error: "Usuário não encontrado!" });
       }
 
       res.status(200).json(user);
@@ -51,7 +61,7 @@ export const listUsers = async (req: Request, res: Response) => {
       res.status(200).json(users);
     }
   } catch (error) {
-    res.status(500).json({ error: "Failed to list users" });
+    res.status(500).json({ error: "Erro ao listar usuários" });
   }
 };
 
@@ -63,9 +73,9 @@ export const deleteUser = async (req: Request, res: Response) => {
       where: { id: id as string },
     });
 
-    return res.json({ message: "User deleted successfully!" });
+    return res.json({ message: "Usuário deletado com sucesso!" });
   } catch (error) {
-    return res.status(500).json({ message: "Error deleting user" });
+    return res.status(500).json({ message: "Falha ao deletar usuário" });
   }
 };
 
@@ -91,6 +101,6 @@ export const updateUser = async (req: Request, res: Response) => {
 
     res.json(updatedUser);
   } catch (error) {
-    res.status(500).json({ error: "Cannot update user!" });
+    res.status(500).json({ error: "Erro ao atualizar usuário!" });
   }
 };
