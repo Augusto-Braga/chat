@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 const LoginPage: React.FC = () => {
   const {
@@ -86,6 +87,11 @@ const LoginPage: React.FC = () => {
         <Button type="submit" variant="contained" color="primary">
           Login
         </Button>
+        <Link to={"/register"}>
+          <Button variant="contained" color="secondary">
+            register
+          </Button>
+        </Link>
       </form>
     </Box>
   );
