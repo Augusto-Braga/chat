@@ -7,11 +7,11 @@ import {
 } from "../controllers/userController";
 import { validateEmail } from "../middleware/validateEmail";
 
-const router = Router();
+const userRouter = Router();
 
-router.post("/users", validateEmail, createUser);
-router.get("/users", listUsers);
-router.delete("/users", deleteUser);
-router.put("/users", validateEmail, updateUser);
+userRouter.post("/users", validateEmail, createUser);
+userRouter.get("/users", listUsers);
+userRouter.delete("/users", deleteUser);
+userRouter.put("/users", validateEmail, updateUser);
 
-export default router;
+export default userRouter;
