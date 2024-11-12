@@ -5,11 +5,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const LoginPage: React.FC = () => {
+  const [serverError, setServerError] = useState<string>("");
+
   const {
     register,
     handleSubmit,
@@ -21,16 +23,36 @@ const LoginPage: React.FC = () => {
     },
   });
 
-  const onSubmit = ({
+  const navigate = useNavigate();
+
+  const onSubmit = async ({
     email,
     password,
   }: {
     email: string;
     password: string;
   }) => {
-    console.log("login efetuado!");
-    console.log(`Email: ${email}`);
-    console.log(`password: ${password}`);
+    try {
+      const response = await fetch("http://localhost:3333/api/login", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem("token", data.token);
+
+        navigate("/home");
+      } else {
+        const errorData = await response.json();
+        setServerError(errorData.error);
+      }
+    } catch (error) {
+      console.error("erro na requisição:", error);
+    }
   };
 
   return (
@@ -92,6 +114,9 @@ const LoginPage: React.FC = () => {
             register
           </Button>
         </Link>
+        {serverError.length > 0 && (
+          <FormHelperText error>{serverError}</FormHelperText>
+        )}
       </form>
     </Box>
   );
