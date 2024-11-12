@@ -39,7 +39,6 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const getLoggedUser = async (req: Request, res: Response) => {
   const token = req.headers["authorization"]?.split(" ")[1];
-  console.log(token);
   let jwtDecodedUser: IJwtUserDecodedUser = { userId: "", iat: 0, exp: 0 };
 
   if (!token) {
@@ -76,7 +75,12 @@ export const getLoggedUser = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
-    res.json(user);
+    const response: Partial<IUser> = {
+      name: user.name,
+      email: user.email,
+    };
+
+    res.json(response);
   } catch (error) {
     res.status(500).json({ error: "Erro ao buscar usuário" });
   }
