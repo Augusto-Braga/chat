@@ -8,9 +8,11 @@ import {
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import { useUser } from "../../contexts/userContext";
 
 const LoginPage: React.FC = () => {
   const [serverError, setServerError] = useState<string>("");
+  const { fetchUser } = useUser();
 
   const {
     register,
@@ -44,6 +46,8 @@ const LoginPage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem("token", data.token);
+
+        await fetchUser();
 
         navigate("/home");
       } else {

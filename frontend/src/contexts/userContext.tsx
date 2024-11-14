@@ -15,9 +15,14 @@ interface UserProviderProps {
   children: ReactNode;
 }
 
-const UserContext = createContext<UserContextProps>({
+interface UserContextValue extends UserContextProps {
+  fetchUser: () => Promise<void>;
+}
+
+const UserContext = createContext<UserContextValue>({
   name: null,
   email: null,
+  fetchUser: async () => {},
 });
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
@@ -26,26 +31,32 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     email: null,
   });
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        const response = await fetch("http://localhost:3333/api/loggedUser", {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUser({ name: data.name, email: data.email });
-        }
+  const fetchUser = async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const response = await fetch("http://localhost:3333/api/loggedUser", {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUser({ name: data.name, email: data.email });
       }
-    };
+    }
+  };
 
-    fetchUser();
+  useEffect(() => {
+    if (user) {
+      fetchUser();
+    }
   }, []);
 
-  return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider value={{ ...user, fetchUser }}>
+      {children}
+    </UserContext.Provider>
+  );
 };
 
 export const useUser = () => useContext(UserContext);
